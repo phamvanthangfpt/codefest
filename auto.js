@@ -87,6 +87,8 @@ function auto() {
   }
   console.log(12);
 
+  socket.emit("drive player", { direction: "1111333332222224444" });
+
   document.getElementById("moving-status").innerHTML = is_moving;
   if (is_moving) {
     if (prev_pos == null) {

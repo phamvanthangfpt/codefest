@@ -66,6 +66,11 @@ function joinGame() {
   gameId = document.getElementById("codefest-game-id").value;
   playerId = document.getElementById("codefest-player-id").value;
   socket.emit("join game", { game_id: gameId, player_id: playerId });
+  // API-4
+  socketClient.emit("register character power", {
+    gameId: gameId,
+    type: 2,
+  });
 }
 
 // API-1b
@@ -73,6 +78,17 @@ socket.on("join game", (res) => {
   console.log("[Socket] join-game responsed", res);
   document.getElementById("joingame-status").innerHTML = "ON";
 });
+
+// API-1b
+socket.on("register character power", (res) => {
+  console.log("[Socket] register character power responsed", res);
+});
+
+// API-4
+// socketClient.emit("register character power", {
+//   gameId: gameId,
+//   type: 2,
+// });
 
 //API-2
 socket.on("ticktack player", (res) => {
@@ -103,6 +119,8 @@ socket.on("ticktack player", (res) => {
     is_moving = false;
     console.log(gameData);
   }
+  console.log("======");
+
   update_game();
   auto();
   document.getElementById("ticktack-status").innerHTML = "ON";
@@ -124,7 +142,11 @@ document.addEventListener("keydown", (e) => {
 });
 
 //API-3b
-socket.on("drive player", (res) => {
-  if (res.direction == "b") next_bomb_stamp = Date.now() + mdelay;
-  // console.log('[Socket] drive-player responsed, res: ', res);
-});
+// socket.on("drive player", (res) => {
+
+// });
+// socket.emit("drive player", { direction: "1111333332222224444" });
+// socket.on("drive player", (res) => {
+//   if (res.direction == "b") next_bomb_stamp = Date.now() + mdelay;
+//   // console.log('[Socket] drive-player responsed, res: ', res);
+// });

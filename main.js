@@ -61,11 +61,32 @@ socketClient.on("register character power", (res) => {
 socketClient.on("ticktack player", (res) => {
   gameData = res;
   if (gameData.tag == "start-game") {
-    isStart = true;
+    start_game_stamp = Date.now();
+    is_moving = false;
+    bomb_expolosed = false;
+  }
+  if (
+    gameData.tag == "player:stop-moving" &&
+    playerId.startsWith(gameData.player_id)
+  ) {
+    is_moving = false;
+  }
+  if (gameData.tag == "bomb:setup" && playerId.startsWith(gameData.player_id)) {
+    is_moving = false;
+  }
+  if (
+    gameData.tag == "player:back-to-playground" &&
+    playerId.startsWith(gameData.player_id)
+  ) {
+    is_moving = false;
+  }
+  if (gameData.tag == "player:moving-banned") {
+    is_moving = false;
   }
   console.log(res);
 
-  auto();
+  update_game();
+  auto(gameData);
   document.getElementById("ticktack-status").innerHTML = "ON";
 });
 

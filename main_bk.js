@@ -119,7 +119,7 @@ socket.on("ticktack player", (res) => {
     is_moving = false;
     console.log(gameData);
   }
-  console.log("======");
+  console.log("======", gameData);
 
   update_game();
   auto();

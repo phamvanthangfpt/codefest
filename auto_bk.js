@@ -22,7 +22,7 @@ var prev_bomb = null;
 // =====HANDLE GAME VARS=====
 var current_state = null;
 var next_bomb_stamp = null;
-var is_moving = false;
+var is_moving = false; // check đang di chuyển
 var start_game_stamp = null;
 
 var mprofile = null;
@@ -39,6 +39,9 @@ var olives = null;
 var oloc = null;
 
 function drive_player(direction, custom) {
+  console.log("direction", direction[0]);
+  console.log("bomb", next_bomb_stamp);
+
   if (is_moving) return;
   if (direction.length == 0) return;
   if (direction[0] == "b") {
@@ -57,39 +60,42 @@ function drive_player(direction, custom) {
 }
 
 function update_game() {
+  // get ve data cua 2 player ,mprofile la minh', oprofile la' doi thu
   if (playerId.startsWith(gameData.map_info.players[0].id)) {
-    mprofile = gameData.map_info.players[0];
+    // check player la mình
+    mprofile = gameData.map_info.players[0]; // thông tin player
     oprofile = gameData.map_info.players[1];
   } else {
     mprofile = gameData.map_info.players[1];
     oprofile = gameData.map_info.players[0];
   }
 
-  mpower = mprofile.power;
-  mspeed = mprofile.speed / 60;
-  mdelay = mprofile.delay;
-  mlives = mprofile.lives;
-  mloc = [mprofile.currentPosition.col, mprofile.currentPosition.row];
+  // mình
+  mpower = mprofile.power; // sức công phá của bom
+  mspeed = mprofile.speed / 60; // tốc độ người chơi
+  mdelay = mprofile.delay; // độ trễ giữa 2 lần đặt bom (ms)
+  mlives = mprofile.lives; // số mạng còn lại của người chơi
+  mloc = [mprofile.currentPosition.col, mprofile.currentPosition.row]; // vị trí hiện tại của người chơi
 
-  opower = oprofile.power;
-  ospeed = oprofile.speed / 60;
-  odelay = oprofile.delay;
-  olives = oprofile.lives;
-  oloc = [oprofile.currentPosition.col, oprofile.currentPosition.row];
+  // đối thủ
+  opower = oprofile.power; // sức công phá của bom
+  ospeed = oprofile.speed / 60; // tốc độ người chơi
+  odelay = oprofile.delay; // độ trễ giữa 2 lần đặt bom (ms)
+  olives = oprofile.lives; // số mạng còn lại của người chơi
+  oloc = [oprofile.currentPosition.col, oprofile.currentPosition.row]; // vị trí hiện tại của người chơi
 }
 
 function auto() {
   if (pause) return;
+  //mlives la' so mau con' lai,
   if (mlives == 1) {
     slice_factor = 1;
   } else {
     slice_factor = 2;
   }
-  console.log(12);
+  document.getElementById("moving-status").innerHTML = is_moving; // hiển thị status lên màn hình web
+  console.log(mloc);
 
-  socket.emit("drive player", { direction: "1111333332222224444" });
-
-  document.getElementById("moving-status").innerHTML = is_moving;
   if (is_moving) {
     if (prev_pos == null) {
       prev_pos = clone(mloc);
@@ -115,35 +121,37 @@ function auto() {
   } else {
     var spoils = spoil_list(current_state);
     var boxes = box_list(current_state);
-    if (boxes.length == 0 && spoils.length == 0) {
-      attackEgg(current_state);
-    } else {
-      attackEgg(current_state);
-      //   if (
-      //     boxes.length != 0 &&
-      //     (spoils.length == 0 || boxes[0].ratio > spoils[0].ratio)
-      //   ) {
-      //     if (equal_coor(mloc, [boxes[0].col, boxes[0].row])) {
-      //       if (find_safe_square(current_state, mloc, mpower) == null) return;
-      //       if (next_bomb_stamp == null || Date.now() > next_bomb_stamp)
-      //         drive_player("b", "box_destroyer");
-      //       return;
-      //     }
+    console.log(boxes);
+    console.log(spoils);
 
-      //     var path = astar(current_state, mloc, [boxes[0].col, boxes[0].row]);
-      //     if (path == null) return;
-      //     var fpath = path.reduce((p, c) => {
-      //       return p + c.action;
-      //     }, "");
-      //     drive_player(translate(fpath).slice(0, slice_factor), "move_to_box");
-      //     return;
-      //   }
-      //   var path = astar(current_state, mloc, [spoils[0].col, spoils[0].row]);
-      //   if (path == null) return;
-      //   var fpath = path.reduce((p, c) => {
-      //     return p + c.action;
-      //   }, "");
-      //   drive_player(translate(fpath).slice(0, slice_factor), "move_to_spoil");
+    if (boxes.length == 0 && spoils.length == 0) {
+      // attackEgg(current_state);
+    } else {
+      // attackEgg(current_state);
+      if (
+        boxes.length != 0 &&
+        (spoils.length == 0 || boxes[0].ratio > spoils[0].ratio)
+      ) {
+        if (equal_coor(mloc, [boxes[0].col, boxes[0].row])) {
+          if (find_safe_square(current_state, mloc, mpower) == null) return;
+          if (next_bomb_stamp == null || Date.now() > next_bomb_stamp)
+            drive_player("b", "box_destroyer");
+          return;
+        }
+        var path = astar(current_state, mloc, [boxes[0].col, boxes[0].row]);
+        if (path == null) return;
+        var fpath = path.reduce((p, c) => {
+          return p + c.action;
+        }, "");
+        drive_player(translate(fpath).slice(0, slice_factor), "move_to_box");
+        return;
+      }
+      var path = astar(current_state, mloc, [spoils[0].col, spoils[0].row]);
+      if (path == null) return;
+      var fpath = path.reduce((p, c) => {
+        return p + c.action;
+      }, "");
+      drive_player(translate(fpath).slice(0, slice_factor), "move_to_spoil");
     }
   }
 }
@@ -537,6 +545,12 @@ function translate(path) {
   return res;
 }
 
+/**
+ *
+ * @param {*} game_state // thông tin map
+ * @param {*} timestamp // thời gian request
+ * @returns
+ */
 function format_state(game_state, timestamp) {
   var res = clone(game_state);
   if (prev_bomb == null) {
@@ -556,9 +570,11 @@ function format_state(game_state, timestamp) {
       bomb.playerId.startsWith(res.players[0].id) ||
       res.players[0].id.startsWith(bomb.playerId) ||
       bomb.playerId == res.players[0].id
-    )
+    ) {
       power = res.players[0].power;
-    else power = res.players[1].power;
+    } else {
+      power = res.players[1].power;
+    }
     res = bomb_block(res, [bomb.col, bomb.row], power, bomb.remainTime);
   }
 
@@ -569,6 +585,14 @@ function format_state(game_state, timestamp) {
   return res;
 }
 
+/**
+ *
+ * @param {*} game_state // map info
+ * @param {*} location // vị trí của bomb
+ * @param {*} power // Sức công phá của bomb (1 đơn vị = 1 cell)
+ * @param {*} remainTime // thời gian còn lại của bomb
+ * @returns
+ */
 function bomb_block(game_state, location, power, remainTime) {
   var result = clone(game_state);
   var [x, y] = location;

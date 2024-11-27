@@ -38,40 +38,80 @@ var odelay = null;
 var olives = null;
 var oloc = null;
 
-const auto = (gameData) => {
+const auto = () => {
   // if (!isStart) return;
   console.log("auto", playerId);
-  socketClient.emit("drive player", {
-    direction: generateDirectionString(gameData),
-  });
+  // socketClient.emit("drive player", {
+  //   direction: generateDirectionString(),
+  // });
+  console.log(generateDirectionString());
 };
 
-function generateDirectionString(gameData) {
+function generateDirectionString() {
   let directionString = "";
-  console.log("data", gameData);
+  console.log("map", gameData.map_info.map);
+  const currentValue = gameData.map_info.map[mloc[0]][mloc[1]];
+  const neighbors = [
+    gameData.map_info.map[mloc[0] - 1][mloc[1]],
+    gameData.map_info.map[mloc[0] + 1][mloc[1]],
+    gameData.map_info.map[mloc[0]][mloc[1] - 1],
+    gameData.map_info.map[mloc[0]][mloc[1] + 1],
+  ];
+  const positionX = gameData.map_info.map[mloc[0]];
+  console.log("position player", mloc);
+  console.log("currentValue", currentValue);
+  console.log("neighbors", neighbors);
+  console.log("positionX", positionX);
 
-  let i = 0;
-  while (i < 10) {
-    const randomDirection = Math.floor(Math.random() * 4) + 1;
-    console.log("random", randomDirection);
+  // if (neighbors[0] === 1) {
+  //   directionString = "2";
+  // }
+  // if (neighbors[1] === 1) {
+  //   directionString = "1";
+  // }
 
-    if (randomDirection === 0) {
-      directionString += "b0";
-    } else if (randomDirection === 1) {
-      directionString += "b1";
-    } else if (randomDirection === 2) {
-      directionString += "b2";
-    } else if (randomDirection === 3) {
-      directionString += "b3";
-    } else {
-      directionString += randomDirection.toString();
-    }
+  // if (neighbors[0] === 0) {
+  //   if (mloc[1] < 20) {
+  //     directionString = "2";
+  //   } else {
+  //     directionString = "1";
+  //   }
+  // }
 
-    i++;
-  }
+  // if (neighbors[1] === 0) {
+  // }
+
+  // while (i < 10) {
+  //   const randomDirection = Math.floor(Math.random() * 4) + 1;
+  //   console.log("random", randomDirection);
+
+  //   // if (randomDirection === 0) {
+  //   //   directionString += "b0";
+  //   // } else if (randomDirection === 1) {
+  //   //   directionString += "b1";
+  //   // } else if (randomDirection === 2) {
+  //   //   directionString += "b2";
+  //   // } else if (randomDirection === 3) {
+  //   //   directionString += "b3";
+  //   // }
+  //   if (randomDirection === 3) {
+  //     directionString = "xb1";
+  //   } else if (randomDirection === 6) {
+  //     directionString = "x";
+  //     setTimeout(() => {
+  //       directionString += randomDirection.toString();
+  //     }, 3000);
+  //   } else {
+  //     directionString += randomDirection.toString();
+  //   }
+
+  //   i++;
+  // }
 
   return directionString;
 }
+
+function checkNeighbors() {}
 
 function update_game() {
   if (playerId.startsWith(gameData.map_info.players[0].id)) {

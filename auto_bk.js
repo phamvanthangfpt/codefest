@@ -47,7 +47,7 @@ function drive_player(direction, custom) {
   if (direction[0] == "b") {
     if (next_bomb_stamp == null || Date.now() > next_bomb_stamp) {
       is_moving = true;
-      socket.emit("drive player", { direction: "b" });
+      socket.emit("drive player", { direction: "b1" });
     } else {
       socket.emit("drive player", { direction: "x" });
     }
@@ -125,7 +125,9 @@ function auto() {
     console.log(spoils);
 
     if (boxes.length == 0 && spoils.length == 0) {
-      // attackEgg(current_state);
+      console.log("egg");
+
+      attackEgg(current_state);
     } else {
       // attackEgg(current_state);
       if (
@@ -135,7 +137,7 @@ function auto() {
         if (equal_coor(mloc, [boxes[0].col, boxes[0].row])) {
           if (find_safe_square(current_state, mloc, mpower) == null) return;
           if (next_bomb_stamp == null || Date.now() > next_bomb_stamp)
-            drive_player("b", "box_destroyer");
+            drive_player("b1", "box_destroyer");
           return;
         }
         var path = astar(current_state, mloc, [boxes[0].col, boxes[0].row]);
@@ -281,7 +283,8 @@ function get_free_neighbors(game_state, location) {
     var direction = neighbor[1];
     if (is_in_bounds(game_state, tile)) {
       if (!is_occupied(game_state, tile)) {
-        if (game_state.map[tile[1]][tile[0]] == 2) {
+        if (game_state.map[tile[1]][tile[0]] == 3) {
+          // meet box
           var safe_path = find_safe_square(game_state, location, mpower);
           if (safe_path == null) continue;
 
@@ -291,6 +294,11 @@ function get_free_neighbors(game_state, location) {
 
           var new_state = send_bomb(game_state, location, mpower);
           free_neighbors.push([tile, "b" + run + back + direction, new_state]);
+        } else if (game_state.map[tile[1]][tile[0]] == 2) {
+          // meet banh chung
+          console.log(location);
+
+          // free_neighbors.push([tile, run + direction, game_state]);
         } else {
           free_neighbors.push([tile, direction, game_state]);
         }
@@ -325,7 +333,7 @@ function equal_coor(a, b) {
 }
 
 function is_box(game_state, tile) {
-  return game_state.map[tile[1]][tile[0]] == 2;
+  return game_state.map[tile[1]][tile[0]] == 3;
 }
 
 function bomb_sim(game_state, location, power) {
@@ -333,38 +341,38 @@ function bomb_sim(game_state, location, power) {
   var [x, y] = location;
   for (var i = x; i >= 0 && i >= x - power; i--) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 998;
       break;
     }
-    if (result.map[y][i] != 3) result.map[y][i] = 999;
+    if (result.map[y][i] != 5) result.map[y][i] = 999;
   }
 
   for (var i = x; i < result.size.cols && i <= x + power; i++) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 998;
       break;
     }
-    if (result.map[y][i] != 3) result.map[y][i] = 999;
+    if (result.map[y][i] != 5) result.map[y][i] = 999;
   }
 
   for (var i = y; i >= 0 && i >= y - power; i--) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 998;
       break;
     }
-    if (result.map[i][x] != 3) result.map[i][x] = 999;
+    if (result.map[i][x] != 5) result.map[i][x] = 999;
   }
 
   for (var i = y; i < result.size.rows && i <= y + power; i++) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 998;
       break;
     }
-    if (result.map[i][x] != 3) result.map[i][x] = 999;
+    if (result.map[i][x] != 5) result.map[i][x] = 999;
   }
 
   result.map[y][x] = 998;
@@ -377,7 +385,7 @@ function send_bomb(game_state, location, power) {
   var [x, y] = location;
   for (var i = x; i >= 0 && i >= x - power; i--) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 0;
       break;
     }
@@ -385,7 +393,7 @@ function send_bomb(game_state, location, power) {
 
   for (var i = x; i < result.size.cols && i <= x + power; i++) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 0;
       break;
     }
@@ -393,7 +401,7 @@ function send_bomb(game_state, location, power) {
 
   for (var i = y; i >= 0 && i >= y - power; i--) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 0;
       break;
     }
@@ -401,7 +409,7 @@ function send_bomb(game_state, location, power) {
 
   for (var i = y; i < result.size.rows && i <= y + power; i++) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 0;
       break;
     }
@@ -598,7 +606,7 @@ function bomb_block(game_state, location, power, remainTime) {
   var [x, y] = location;
   for (var i = x; i >= 0 && i >= x - power; i--) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 998;
       prev_bomb[y][i] =
         Date.now() +
@@ -607,7 +615,7 @@ function bomb_block(game_state, location, power, remainTime) {
         bomb_explosion_duration;
       break;
     }
-    if (result.map[y][i] != 3) result.map[y][i] = 999;
+    if (result.map[y][i] != 5) result.map[y][i] = 999;
     result.bomb_map[y][i] = remainTime;
     prev_bomb[y][i] =
       Date.now() +
@@ -618,7 +626,7 @@ function bomb_block(game_state, location, power, remainTime) {
 
   for (var i = x; i < result.size.cols && i <= x + power; i++) {
     if (result.map[y][i] == 1) break;
-    if (result.map[y][i] == 2) {
+    if (result.map[y][i] == 3) {
       result.map[y][i] = 998;
       prev_bomb[y][i] =
         Date.now() +
@@ -627,7 +635,7 @@ function bomb_block(game_state, location, power, remainTime) {
         bomb_explosion_duration;
       break;
     }
-    if (result.map[y][i] != 3) result.map[y][i] = 999;
+    if (result.map[y][i] != 5) result.map[y][i] = 999;
     result.bomb_map[y][i] = remainTime;
     prev_bomb[y][i] =
       Date.now() +
@@ -638,7 +646,7 @@ function bomb_block(game_state, location, power, remainTime) {
 
   for (var i = y; i >= 0 && i >= y - power; i--) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 998;
       prev_bomb[i][x] =
         Date.now() +
@@ -647,7 +655,7 @@ function bomb_block(game_state, location, power, remainTime) {
         bomb_explosion_duration;
       break;
     }
-    if (result.map[i][x] != 3) result.map[i][x] = 999;
+    if (result.map[i][x] != 5) result.map[i][x] = 999;
     result.bomb_map[i][x] = remainTime;
     prev_bomb[i][x] =
       Date.now() +
@@ -658,7 +666,7 @@ function bomb_block(game_state, location, power, remainTime) {
 
   for (var i = y; i < result.size.rows && i <= y + power; i++) {
     if (result.map[i][x] == 1) break;
-    if (result.map[i][x] == 2) {
+    if (result.map[i][x] == 3) {
       result.map[i][x] = 998;
       prev_bomb[i][x] =
         Date.now() +
@@ -667,7 +675,7 @@ function bomb_block(game_state, location, power, remainTime) {
         bomb_explosion_duration;
       break;
     }
-    if (result.map[i][x] != 3) result.map[i][x] = 999;
+    if (result.map[i][x] != 5) result.map[i][x] = 999;
     result.bomb_map[i][x] = remainTime;
     prev_bomb[i][x] =
       Date.now() +
@@ -830,13 +838,13 @@ function box_list(game_state) {
 function count_surrounding(game_state, location) {
   var res = 0;
   var [x, y] = location;
-  if (is_in_bounds(game_state, [x - 1, y]) && game_state.map[y][x - 1] == 2)
+  if (is_in_bounds(game_state, [x - 1, y]) && game_state.map[y][x - 1] == 3)
     res++;
-  if (is_in_bounds(game_state, [x + 1, y]) && game_state.map[y][x + 1] == 2)
+  if (is_in_bounds(game_state, [x + 1, y]) && game_state.map[y][x + 1] == 3)
     res++;
-  if (is_in_bounds(game_state, [x, y - 1]) && game_state.map[y - 1][x] == 2)
+  if (is_in_bounds(game_state, [x, y - 1]) && game_state.map[y - 1][x] == 3)
     res++;
-  if (is_in_bounds(game_state, [x, y + 1]) && game_state.map[y + 1][x] == 2)
+  if (is_in_bounds(game_state, [x, y + 1]) && game_state.map[y + 1][x] == 3)
     res++;
   return res;
 }
@@ -940,28 +948,33 @@ function sum_of_spoil(game_state, location) {
 }
 
 function attackEgg(current_state) {
-  var oegg = current_state.dragonEggGSTArray.find(
-    (value) => value.id == oprofile.id
-  );
-  var [x, y] = mloc;
-  console.log(mloc, "mlocmlocmlocmloc");
-  var path = astar(current_state, mloc, [oegg.col, oegg.row]);
-  if (path == null) return;
-  var fpath = path.reduce((p, c) => {
-    return p + c.action;
-  }, "");
+  console.log("god", current_state);
 
-  if (
-    current_state.map[y][x - 1] == 5 ||
-    current_state.map[y][x + 1] == 5 ||
-    current_state.map[y - 1][x] == 5 ||
-    current_state.map[y + 1][x] == 5
-  ) {
-    drive_player("b", "box_destroyer");
-  } else {
-    drive_player(translate(fpath).slice(0, slice_factor), "egg");
-  }
-  return;
+  // setTimeout(() => {
+  //   socket.emit("drive player", { direction: "x" });
+  // }, 3000);
+  // var oegg = current_state.dragonEggGSTArray.find(
+  //   (value) => value.id == oprofile.id
+  // );
+  // var [x, y] = mloc;
+  // console.log(mloc, "mlocmlocmlocmloc");
+  // var path = astar(current_state, mloc, [oegg.col, oegg.row]);
+  // if (path == null) return;
+  // var fpath = path.reduce((p, c) => {
+  //   return p + c.action;
+  // }, "");
+
+  // if (
+  //   current_state.map[y][x - 1] == 5 ||
+  //   current_state.map[y][x + 1] == 5 ||
+  //   current_state.map[y - 1][x] == 5 ||
+  //   current_state.map[y + 1][x] == 5
+  // ) {
+  //   drive_player("b1", "box_destroyer");
+  // } else {
+  //   drive_player(translate(fpath).slice(0, slice_factor), "egg");
+  // }
+  // return;
 }
 
 function pause_bot() {

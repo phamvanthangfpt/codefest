@@ -86,7 +86,7 @@ socketClient.on("ticktack player", (res) => {
   console.log(res);
 
   update_game();
-  auto(gameData);
+  auto();
   document.getElementById("ticktack-status").innerHTML = "ON";
 });
 

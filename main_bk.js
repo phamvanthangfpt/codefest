@@ -28,10 +28,10 @@ const SPOIL = {
 const MAP = {
   ROAD: 0,
   WALL: 1,
-  BOX: 2,
-  TELEPORT: 3,
-  QUARANTINE: 4,
-  EGG: 5,
+  BOX: 3,
+  TELEPORT: 4,
+  QUARANTINE: 5,
+  EGG: 6,
 };
 
 var gameData = null;
